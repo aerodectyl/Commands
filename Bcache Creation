@@ -1,0 +1,41 @@
+4 drives one cache SSD
+
++-----------------------------------------------------------+
+|                         btrfs /mnt                        |
++--------------+--------------+--------------+--------------+
+| /dev/Bcache0 | /dev/Bcache1 | /dev/Bcache2 | /dev/Bcache3 |
++--------------+--------------+--------------+--------------+
+|                           Cache                           |  
+|                         /dev/sdk1                         |
++--------------+--------------+--------------+--------------+
+| Data         | Data         | Data         | Data         |
+| /dev/sdv1    | /dev/sdw1    | /dev/sdx1    | /dev/sdy1    |
++--------------+--------------+--------------+--------------+
+1. Format the backing devices (These will typically be your mechanical drives). The backing devices can be whole devices, partitions or any other standard block devices. This will create /dev/bcache0, /dev/bcache1, /dev/bcache2 and /dev/bcache3
+# make-bcache -B /dev/sdv1
+# make-bcache -B /dev/sdw1
+# make-bcache -B /dev/sdx1
+# make-bcache -B /dev/sdy1
+
+2. Format the cache device (This will typically be your SSD). The cache device can be a whole device, a partition or any other standard block device. Only one cache device can be added to a group of backing devices.
+# make-bcache -C /dev/sdk1
+
+3. Get the uuid of the cache device
+# bcache-super-show /dev/sdk1 | grep cset
+cset.uuid		f0e01318-f4fd-4fab-abbb-d76d870503ec
+
+4. Register the cache device against your backing devices. Replace the example uuid with the uuid of your cache.
+# echo f0e01318-f4fd-4fab-abbb-d76d870503ec > /sys/block/bcache0/bcache/attach
+# echo f0e01318-f4fd-4fab-abbb-d76d870503ec > /sys/block/bcache1/bcache/attach
+# echo f0e01318-f4fd-4fab-abbb-d76d870503ec > /sys/block/bcache2/bcache/attach
+# echo f0e01318-f4fd-4fab-abbb-d76d870503ec > /sys/block/bcache3/bcache/attach
+
+5. Create the btrfs filesystem. Both the data and the metadata is stored twice in the array, so there will be no data loss when a single hard drive fails. The -L argument defines the label of the filesystem.
+# mkfs.btrfs -L STORAGE -f -d raid1 -m raid1 /dev/bcache0 /dev/bcache1 /dev/bcache2 /dev/bcache3 
+
+6. mount the filesystem
+# mount /dev/bcache0 /mnt
+
+7.Use Gnome disk utility to mount created Bcache at startup
+
+8.If write access can be gained by using nautilus in root mode "sudo nautilus" and the changing the permissions in mout directory
