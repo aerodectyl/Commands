@@ -1,0 +1,27 @@
+
+sudo apt install update
+
+sudo apt install samba -y
+
+sudo systemctl enable samba
+
+Now config samba config
+
+sudo vim /etc/samba/smb.conf or sudo nano /etc/samba/smb.conf
+
+add below line at end of config for each share
+
+[name of share]
+comment = about share
+path = path of folder
+browseable = yes
+guest ok = no
+writable = yes
+
+press ctrl+x then ctrl+o
+
+now create passowrd for smb share
+
+smbpasswd -a your user name here
+
+reboot
