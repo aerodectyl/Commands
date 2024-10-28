@@ -1,0 +1,13 @@
+# create volume group [vg_striped] with [/dev/sdb1] and [/dev/sdc1]
+root@dlp:~# vgcreate vg_striped /dev/sdb1 /dev/sdc1
+  Volume group "vg_striped" successfully created
+
+# create striped volume
+root@dlp:~# lvcreate -L 50G -i2 -I 64 -n lv_striped vg_striped
+  Logical volume "lv_striped" created.
+
+  use -l and in size use 100%FREE to create striped partition with 100% usable space
+
+root@dlp:~# lvdisplay /dev/vg_striped/lv_striped
+
+now the striped drive can be created using gnome-disk utility
